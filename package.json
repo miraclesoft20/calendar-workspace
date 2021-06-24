@@ -6,25 +6,31 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "npm_pack": "cd dist/prime-calendar && npm pack",
+    "build_lib": "ng build --prod prime-calendar",
+    "package": "npm run build_lib && npm run npm_pack"
   },
   "private": true,
   "dependencies": {
-    "@angular/animations": "~12.0.1",
-    "@angular/common": "~12.0.1",
-    "@angular/compiler": "~12.0.1",
-    "@angular/core": "~12.0.1",
-    "@angular/forms": "~12.0.1",
-    "@angular/platform-browser": "~12.0.1",
-    "@angular/platform-browser-dynamic": "~12.0.1",
-    "@angular/router": "~12.0.1",
+    "@angular/animations": "11.2.7",
+    "@angular/common": "11.2.7",
+    "@angular/compiler": "11.2.7",
+    "@angular/core": "11.2.7",
+    "@angular/forms": "11.2.7",
+    "@angular/platform-browser": "11.2.7",
+    "@angular/platform-browser-dynamic": "11.2.7",
+    "@angular/router": "11.2.7",
+    "primeng": "11.4.0",
+    "jalali-moment": "^3.3.10",
     "rxjs": "~6.6.0",
-    "tslib": "^2.1.0",
+    "tslib": "^2.0.0",
     "zone.js": "~0.11.4"
   },
   "devDependencies": {
-    "@angular/cli": "~12.0.1",
-    "@angular/compiler-cli": "~12.0.1",
+    "@angular-devkit/build-angular": "^0.1102.14",
+    "@angular/cli": "11.2.6",
+    "@angular/compiler-cli": "11.2.7",
     "@types/jasmine": "~3.6.0",
     "@types/node": "^12.11.1",
     "jasmine-core": "~3.7.0",
@@ -33,6 +39,8 @@
     "karma-coverage": "~2.0.3",
     "karma-jasmine": "~4.0.0",
     "karma-jasmine-html-reporter": "^1.5.0",
-    "typescript": "~4.2.3"
+    "ng-packagr": "^12.0.0",
+    "tslint": "~6.1.0",
+    "typescript": "~4.0.2"
   }
 }

@@ -14,6 +14,12 @@
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "importHelpers": true,
+    "paths": {
+      "prime-calendar": [
+        "dist/prime-calendar/prime-calendar",
+        "dist/prime-calendar"
+      ]
+    },
     "target": "es2017",
     "module": "es2020",
     "lib": [
