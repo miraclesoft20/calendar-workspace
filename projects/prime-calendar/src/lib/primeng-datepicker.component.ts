@@ -33,6 +33,7 @@ export const CALENDAR_VALUE_ACCESSOR: any = {
 };
 
 export interface LocaleSettings {
+  locale: string;
   firstDayOfWeek: number;
   dayNames: string[];
   dayNamesShort: string[];
@@ -41,7 +42,7 @@ export interface LocaleSettings {
   monthNamesShort?: string[];
   today: string;
   clear: string;
-  dateFormat?: string;
+  dateFormat: string;
   weekHeader?: string;
 }
 
@@ -104,7 +105,7 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
 
   @Input() disabled: any;
 
-  @Input() dateFormat: string = 'yy/mm/dd';
+  @Input() dateFormat?: string;
 
   @Input() multipleSeparator: string = ',';
 
@@ -170,7 +171,7 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
 
   @Input() keepInvalid: boolean = false;
 
-  @Input() hideOnDateTimeSelect: boolean = false;
+  @Input() hideOnDateTimeSelect: boolean = true;
 
   @Input() numberOfMonths: number = 1;
 
@@ -328,6 +329,7 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
   translationSubscription?: Subscription;
 
   _locale: LocaleSettings = {
+    locale: 'fa',
     firstDayOfWeek: 0,
     dayNames: [' شنبه', 'یک شنبه', 'دو شنبه ', 'سه شنبه', 'چهار شنبه', ' پنج شنبه', ' جمعه'],
     dayNamesShort: ['شن', 'یک', 'دو ', 'س', 'چ', ' پ', ' ج'],
@@ -336,7 +338,7 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
     monthNamesShort: ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'],
     today: 'امروز',
     clear: 'پاک کردن',
-    dateFormat: 'jYYYY/jMM/jDD'
+    dateFormat: 'YYYY/MM/DD'
   };
 
 
@@ -460,6 +462,7 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
 
     if (this.isJalali) {
       this._locale = {
+        locale: 'fa',
         firstDayOfWeek: 0,
         dayNames: ['شنبه', 'یکشنبه', 'دوشنبه ', 'سه شنبه', 'چهارشنبه', 'پنج شنبه', 'جمعه'],
         dayNamesShort: ['شنبه', 'یکشنبه', 'دوشنبه ', 'سه شنبه', 'چهارشنبه', 'پنج شنبه', 'جمعه'],
@@ -468,13 +471,14 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
         monthNamesShort: ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'],
         today: 'امروز',
         clear: 'پاک کردن',
-        dateFormat: 'jYYYY/jMM/jDD',
+        dateFormat: 'YYYY/MM/DD',
       };
 
       this.currentMonth = date.jMonth();
       this.currentYear = date.jYear();
     } else {
       this._locale = {
+        locale: 'en',
         firstDayOfWeek: 0,
         dayNames: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
         dayNamesShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
@@ -483,7 +487,7 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
         monthNamesShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
         today: 'Today',
         clear: 'Clear',
-        dateFormat: 'yy/mm/dd'
+        dateFormat: 'YYYY/MM/DD'
       };
       this.currentMonth = date.month();
       this.currentYear = date.year();
@@ -856,21 +860,26 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
   }
 
   selectDate(dateMeta: any) {
-    let date = moment(dateMeta.year + '-' + (dateMeta.month + 1) + '-' + dateMeta.day, 'jYYYY-jM-jD').locale('fa');
-    ;
+    let date;
+    if (this.isJalali) {
+      date = moment(dateMeta.year + '-' + (dateMeta.month + 1) + '-' + dateMeta.day, 'jYYYY-jM-jD').locale('fa');
+    } else {
+      date = moment().year(dateMeta.year).month(dateMeta.month).date(dateMeta.day);
+    }
+
 
     if (this.showTime) {
       if (this.hourFormat == '12') {
         if (this.currentHour === 12)
           date.hour(this.pm ? 12 : 0);
         else
-          date.hour(this.pm ? this.currentHour ?? 0 + 12 : this.currentHour ?? 0);
+          date.hour(this.pm ? this.currentHour + 12 : this.currentHour);
       } else {
-        date.hour(this.currentHour ?? 0);
+        date.hour(this.currentHour);
       }
 
-      date.minute(this.currentMinute ?? 1);
-      date.second(this.currentSecond ?? 1);
+      date.minute(this.currentMinute);
+      date.second(this.currentSecond);
     }
 
     if (this.minDate && this.minDate > date) {
@@ -908,7 +917,6 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
         this.updateModel([date, null]);
       }
     }
-
     this.onSelect.emit(date);
   }
 
@@ -1598,14 +1606,14 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
     let m = event.target.value
     this.currentMonth = parseInt(m);
     this.onMonthChange.emit({month: this.currentMonth + 1, year: this.currentYear});
-    this.createMonths(this.currentMonth, this.currentYear ?? 0);
+    this.createMonths(this.currentMonth, this.currentYear);
   }
 
   onYearDropdownChange(event: any) {
     let y = event.target.value
     this.currentYear = parseInt(y);
-    this.onYearChange.emit({month: this.currentMonth ?? 0 + 1, year: this.currentYear});
-    this.createMonths(this.currentMonth ?? 0, this.currentYear);
+    this.onYearChange.emit({month: this.currentMonth + 1, year: this.currentYear});
+    this.createMonths(this.currentMonth, this.currentYear);
   }
 
   convertTo24Hour(hours: number, pm: boolean): number {
@@ -1628,7 +1636,7 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
     if (this.isMultipleSelection()) {
       value = this.value[this.value.length - 1];
     }
-    const valueDateString = value ? value.toDateString() : null;
+    const valueDateString = value ? value.toString() : null;
     if (this.minDate && valueDateString && this.minDate.toDate().toDateString() === valueDateString) {
       if (this.minDate.toDate().getHours() > convertedHour) {
         return false;
@@ -1666,7 +1674,7 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
 
   incrementHour(event: any) {
     const prevHour = this.currentHour;
-    let newHour = this.currentHour ?? 0 + this.stepHour;
+    let newHour = this.currentHour + this.stepHour;
     let newPM = this.pm;
 
     if (this.hourFormat == '24')
@@ -1679,7 +1687,7 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
       newHour = (newHour >= 13) ? (newHour - 12) : newHour;
     }
 
-    if (this.validateTime(newHour, this.currentMinute ?? 0, this.currentSecond ?? 0, newPM)) {
+    if (this.validateTime(newHour, this.currentMinute, this.currentSecond, newPM)) {
       this.currentHour = newHour;
       this.pm = newPM;
     }
@@ -1819,7 +1827,7 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
     if (this.isMultipleSelection()) {
       value = this.value[this.value.length - 1];
     }
-    value = value ? moment(value.unix()) : moment();
+    value = value ? moment(value) : moment();
 
     if (this.hourFormat == '12') {
       if (this.currentHour === 12)
@@ -1863,21 +1871,47 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
       return;
     }
     this.isKeydown = false;
-
-    let val = event.target.value;
-    try {
-      let value = this.parseValueFromString(val);
-      if (this.isValidSelection(value)) {
-        this.updateModel(value);
-        this.updateUI();
+    if (this.isValidInput(event.target.value)) {
+      let val = event.target.value;
+      try {
+        let value = this.parseValueFromString(val);
+        if (this.isValidSelection(value)) {
+          this.updateModel(value);
+          this.updateUI();
+          this.appendOverlay();
+        }
+      } catch (err) {
+        //invalid date
+        this.updateModel(null);
       }
-    } catch (err) {
-      //invalid date
-      this.updateModel(null);
-    }
 
-    this.filled = val != null && val.length;
-    this.onInput.emit(event);
+      this.filled = val != null && val.length;
+      this.onInput.emit(event);
+    }
+  }
+
+  isValidInput(text: string): boolean {
+    let isValid = false;
+    if (this.isSingleSelection()) {
+      let parts = text.split(' ');
+      if (this.timeOnly) {
+        try {
+          this.parseTime(parts[0]);
+        } catch (e) {
+          isValid = false;
+        }
+      } else {
+        isValid = moment(parts[0], this.locale.dateFormat, this.locale.locale).isValid();
+        if (this.showTime) {
+          try{
+            this.parseTime(parts[1]);
+          }catch (e) {
+            isValid =  false;
+          }
+        }
+      }
+    }
+    return isValid;
   }
 
   isValidSelection(value: any): boolean {
@@ -1923,23 +1957,17 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
   parseDateTime(text: string): Moment {
     let date: Moment;
     let parts: string[] = text.split(' ');
-
+    this.hourFormat = '24'
     if (this.timeOnly) {
       date = moment();
-      this.populateTime(date, parts[0], parts[1]);
+      this.populateTime(date, parts[1], "am");
     } else {
-      const dateFormat = this.getDateFormat();
+      const dateFormat = this.getDateFormat() ? this.getDateFormat() : this.locale.dateFormat;
+      date = moment(parts[0], this.isJalali ? 'jYYYY/jMM/jDD' : dateFormat);
       if (this.showTime) {
-        let ampm = this.hourFormat == '12' ? parts.pop() : null;
-        let timeString = parts.pop();
-
-        date = this.parseDate(parts.join(' '), dateFormat) ?? moment();
-        this.populateTime(date, timeString ?? '', ampm ?? '');
-      } else {
-        date = this.parseDate(text, dateFormat) ?? moment();
+        this.populateTime(date, parts[1], "am");
       }
     }
-
     return date;
   }
 
@@ -2144,89 +2172,15 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
   }
 
   // Ported from jquery-ui datepicker formatDate
-  formatDate(date: Moment, format: any) {
+  formatDate(date: Moment, format?: string) {
     if (!date) {
       return '';
     }
 
-    if (this.isJalali) {
-      return date.locale('fa').format(format)
-    }
+    format = format ? format : this.locale.dateFormat;
 
-    let iFormat = 0;
-    const lookAhead = (match: any) => {
-        const matches = (iFormat + 1 < format.length && format.charAt(iFormat + 1) === match);
-        if (matches) {
-          iFormat++;
-        }
-        return matches;
-      },
-      formatNumber = (match: any, value: any, len: number) => {
-        let num = '' + value;
-        if (lookAhead(match)) {
-          while (num.length < len) {
-            num = '0' + num;
-          }
-        }
-        return num;
-      },
-      formatName = (match: any, value: any, shortNames: string[], longNames: string[]) => {
-        return (lookAhead(match) ? longNames[value] : shortNames[value]);
-      };
-    let output = '';
-    let literal = false;
+    return date.locale(this.isJalali ? 'fa' : 'en').format(format);
 
-    if (date) {
-      for (iFormat = 0; iFormat < format.length; iFormat++) {
-        if (literal) {
-          if (format.charAt(iFormat) === '\'' && !lookAhead('\'')) {
-            literal = false;
-          } else {
-            output += format.charAt(iFormat);
-          }
-        } else {
-          switch (format.charAt(iFormat)) {
-            case 'd':
-              output += formatNumber('d', date.date(), 2);
-              break;
-            case 'D':
-              output += formatName('D', date.date(), this.locale.dayNamesShort, this.locale.dayNames);
-              break;
-            case 'o':
-              output += formatNumber('o',
-                Math.round((
-                  moment([date.year(), date.month(), date.date()]).unix() -
-                  moment([date.year(), 0, 0]).unix()) / 86400000), 3);
-              break;
-            case 'm':
-              output += formatNumber('m', date.month() + 1, 2);
-              break;
-            case 'M':
-              output += formatName('M', date.month(), this.locale.monthNamesShort ?? [], this.locale.monthNames ?? []);
-              break;
-            case 'y':
-              output += lookAhead('y') ? date.year() : (date.year() % 100 < 10 ? '0' : '') + (date.year() % 100);
-              break;
-            case '@':
-              output += date.toDate().getTime();
-              break;
-            case '!':
-              output += date.toDate().getTime() * 10000 + this.ticksTo1970;
-              break;
-            case '\'':
-              if (lookAhead('\'')) {
-                output += '\'';
-              } else {
-                literal = true;
-              }
-              break;
-            default:
-              output += format.charAt(iFormat);
-          }
-        }
-      }
-    }
-    return output;
   }
 
   formatTime(date: Moment) {
@@ -2291,8 +2245,9 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
   }
 
   // Ported from jquery-ui datepicker parseDate
-  parseDate(value: any, format: string) {
-    if (format == null || value == null) {
+  parseDate(value: any, format?: string) {
+
+    if (format == undefined || format == null || value == null) {
       throw "Invalid arguments";
     }
 
@@ -2514,6 +2469,7 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
 
     this.onDateSelect(event, dateMeta);
     this.onTodayClick.emit(event);
+    this.updateUI();
   }
 
   onClearButtonClick(event: any) {
