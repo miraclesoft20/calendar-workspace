@@ -25,7 +25,6 @@ import {NG_VALUE_ACCESSOR, ControlValueAccessor} from '@angular/forms';
 import {Subscription} from 'rxjs';
 import * as moment from 'jalali-moment';
 import {Moment} from "jalali-moment";
-
 export const CALENDAR_VALUE_ACCESSOR: any = {
   provide: NG_VALUE_ACCESSOR,
   useExisting: forwardRef(() => PrimengDatepickerComponent),
@@ -42,6 +41,7 @@ export interface LocaleSettings {
   monthNamesShort?: string[];
   today: string;
   clear: string;
+  lan: string;
   dateFormat: string;
   weekHeader?: string;
 }
@@ -160,6 +160,8 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
   @Input() todayButtonStyleClass: string = 'p-button-text';
 
   @Input() clearButtonStyleClass: string = 'p-button-text';
+
+  @Input() changeLocaleButtonStyleClass: string = 'p-button-text';
 
   @Input() autoZIndex: boolean = true;
 
@@ -296,6 +298,8 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
 
   _yearRange: string = '';
 
+  _jalaliYearRange: string = '';
+
   preventDocumentListener?: boolean;
 
   dateTemplate: TemplateRef<any> | null = null;
@@ -328,7 +332,7 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
 
   translationSubscription?: Subscription;
 
-  _locale: LocaleSettings = {
+  _fa_locale: LocaleSettings = {
     locale: 'fa',
     firstDayOfWeek: 0,
     dayNames: [' شنبه', 'یک شنبه', 'دو شنبه ', 'سه شنبه', 'چهار شنبه', ' پنج شنبه', ' جمعه'],
@@ -338,9 +342,25 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
     monthNamesShort: ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'],
     today: 'امروز',
     clear: 'پاک کردن',
+    lan: 'miladi',
     dateFormat: 'YYYY/MM/DD'
   };
 
+  _en_locale: LocaleSettings = {
+    locale: 'en',
+    firstDayOfWeek: 0,
+    dayNames: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+    dayNamesShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+    dayNamesMin: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
+    monthNames: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+    monthNamesShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    today: 'Today',
+    clear: 'Clear',
+    lan: 'جلالی',
+    dateFormat: 'YYYY/MM/DD'
+  };
+
+  _locale: LocaleSettings = this._fa_locale;
 
   @Input() get defaultDate(): Moment {
     return this._defaultDate;
@@ -352,11 +372,11 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
     if (this.initialized) {
       const date = defaultDate || moment();
       if (this.isJalali) {
-        this.currentMonth = date.jMonth();
-        this.currentYear = date.jYear();
+        this.currentMonth = date.locale('fa').month();
+        this.currentYear = date.locale('fa').year();
       } else {
-        this.currentMonth = date.month();
-        this.currentYear = date.year();
+        this.currentMonth = date.locale('en').month();
+        this.currentYear = date.locale('en').year();
       }
 
       this.initTime(date);
@@ -414,6 +434,23 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
     }
   }
 
+
+  @Input() get jalaliYearRange(): string {
+    return this._jalaliYearRange;
+  }
+
+  set jalaliYearRange(jalaliYearRange: string) {
+    this._jalaliYearRange = jalaliYearRange;
+
+    if (jalaliYearRange) {
+      const years = jalaliYearRange.split(':');
+      const yearStart = parseInt(years[0]);
+      const yearEnd = parseInt(years[1]);
+
+      this.populateYearOptions(yearStart, yearEnd);
+    }
+  }
+
   @Input() get yearRange(): string {
     return this._yearRange;
   }
@@ -461,36 +498,26 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
     const date = this.defaultDate || moment();
 
     if (this.isJalali) {
-      this._locale = {
-        locale: 'fa',
-        firstDayOfWeek: 0,
-        dayNames: ['شنبه', 'یکشنبه', 'دوشنبه ', 'سه شنبه', 'چهارشنبه', 'پنج شنبه', 'جمعه'],
-        dayNamesShort: ['شنبه', 'یکشنبه', 'دوشنبه ', 'سه شنبه', 'چهارشنبه', 'پنج شنبه', 'جمعه'],
-        dayNamesMin: ['شنبه', 'یکشنبه', 'دوشنبه ', 'سه شنبه', 'چهارشنبه', 'پنج شنبه', 'جمعه'],
-        monthNames: ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'],
-        monthNamesShort: ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'],
-        today: 'امروز',
-        clear: 'پاک کردن',
-        dateFormat: 'YYYY/MM/DD',
-      };
+      this._locale = this._fa_locale;
 
-      this.currentMonth = date.jMonth();
-      this.currentYear = date.jYear();
+      this.currentMonth = date.locale('fa').month();
+      this.currentYear = date.locale('fa').year();
+      if (this._jalaliYearRange) {
+        const years = this._jalaliYearRange.split(":");
+        this.populateYearOptions(parseInt(years[0]), parseInt(years[1]))
+      } else {
+        this.populateYearOptions(this.currentYear - 20, this.currentYear + 10)
+      }
     } else {
-      this._locale = {
-        locale: 'en',
-        firstDayOfWeek: 0,
-        dayNames: ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
-        dayNamesShort: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-        dayNamesMin: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
-        monthNames: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
-        monthNamesShort: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-        today: 'Today',
-        clear: 'Clear',
-        dateFormat: 'YYYY/MM/DD'
-      };
-      this.currentMonth = date.month();
-      this.currentYear = date.year();
+      this._locale = this._en_locale;
+      this.currentMonth = date.locale('en').month();
+      this.currentYear = date.locale('en').year();
+      if (this._yearRange) {
+        const years = this._yearRange.split(":");
+        this.populateYearOptions(parseInt(years[0]), parseInt(years[1]))
+      } else {
+        this.populateYearOptions(this.currentYear - 20, this.currentYear + 10)
+      }
     }
 
     if (this.view === 'date') {
@@ -1038,9 +1065,10 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
   }
 
   isDateEquals(value: Moment, dateMeta: any) {
-    if (value)
-      return value.date() === dateMeta.day && value.month() === dateMeta.month && value.year() === dateMeta.year;
-    else
+    if (value) {
+      const newValue = value.locale(this._locale.locale).clone();
+      return newValue.date() === dateMeta.day && newValue.month() === dateMeta.month && newValue.year() === dateMeta.year;
+    } else
       return false;
   }
 
@@ -1888,6 +1916,7 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
       this.filled = val != null && val.length;
       this.onInput.emit(event);
     }
+    this.updateFocus();
   }
 
   isValidInput(text: string): boolean {
@@ -1903,10 +1932,10 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
       } else {
         isValid = moment(parts[0], this.locale.dateFormat, this.locale.locale).isValid();
         if (this.showTime) {
-          try{
+          try {
             this.parseTime(parts[1]);
-          }catch (e) {
-            isValid =  false;
+          } catch (e) {
+            isValid = false;
           }
         }
       }
@@ -1990,11 +2019,11 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
     }
 
     if (this.isJalali) {
-      this.currentMonth = val.jMonth();
-      this.currentYear = val.jYear();
+      this.currentMonth = val.locale('fa').month();
+      this.currentYear = val.locale('fa').year();
     } else {
-      this.currentMonth = val.month();
-      this.currentYear = val.year();
+      this.currentMonth = val.locale('en').month();
+      this.currentYear = val.locale('en').year();
     }
 
     this.createMonths(this.currentMonth, this.currentYear);
@@ -2477,6 +2506,72 @@ export class PrimengDatepickerComponent implements OnInit, OnDestroy, ControlVal
     this.updateInputfield();
     this.hideOverlay();
     this.onClearClick.emit(event);
+  }
+
+
+  onChangeLocaleButtonClick(event: any) {
+    this.changeLocale();
+  }
+
+
+  private changeLocale() {
+    if(this.value == undefined){
+      this.value = moment().locale(this._locale.locale);
+    }
+    if (!this.isJalali) {
+      this._locale = this._fa_locale;
+
+
+      this.currentMonth = this.value.locale('fa').month();
+      this.currentYear = this.value.locale('fa').year();
+      if (this._jalaliYearRange) {
+        const years = this._jalaliYearRange.split(":");
+        this.populateYearOptions(parseInt(years[0]), parseInt(years[1]))
+      } else {
+        this.populateYearOptions(this.currentYear - 20, this.currentYear + 10)
+      }
+    } else {
+      this._locale = this._en_locale;
+      this.currentMonth = this.value.locale('en').month();
+      this.currentYear = this.value.locale('en').year();
+
+      if (this._yearRange) {
+        const years = this._yearRange.split(":");
+        this.populateYearOptions(parseInt(years[0]), parseInt(years[1]))
+      } else {
+        this.populateYearOptions(this.currentYear - 20, this.currentYear + 10)
+      }
+    }
+
+    this.isJalali = !this.isJalali;
+
+    if (this.view === 'date') {
+      this.createWeekDays();
+      this.initTime(this.value);
+      this.createMonths(this.currentMonth, this.currentYear);
+      this.ticksTo1970 = (((1970 - 1) * 365 + Math.floor(1970 / 4) - Math.floor(1970 / 100) + Math.floor(1970 / 400)) * 24 * 60 * 60 * 10000000);
+    } else if (this.view === 'month') {
+      this.createMonthPickerValues();
+    }
+    this.updateFilledState();
+    this.updateModel(this.value);
+    this.updateUI();
+
+    this.selectDate({
+      "day": this.value.date(),
+      "month": this.value.month(),
+      "year": this.value.year(),
+      "today": this.isCurrentDate(this.value),
+      "selectable": true
+    });
+
+    this.updateInputfield();
+  }
+
+  private isCurrentDate(date: Moment): boolean {
+    const toDay = moment().locale('en');
+    const targetDate = date.clone().locale('en');
+    return (toDay.month() == targetDate.month() && toDay.date() == targetDate.date() && toDay.year() == targetDate.year())
   }
 
   bindDocumentClickListener() {
