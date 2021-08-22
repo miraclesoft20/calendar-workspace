@@ -48,12 +48,14 @@
                                     </thead>
                                     <tbody>
                                         <tr *ngFor="let week of month.dates; let j = index;">
-                                            <td *ngIf="showWeek" class="p-datepicker-weeknumber">
+
+                                          <td *ngIf="showWeek" class="p-datepicker-weeknumber">
                                                 <span class="p-disabled">
                                                     {{month.weekNumbers[j]}}
                                                 </span>
                                             </td>
                                             <td *ngFor="let date of week" [ngClass]="{'p-datepicker-other-month': date.otherMonth,'p-datepicker-today':date.today}">
+
                                                 <ng-container *ngIf="date.otherMonth ? showOtherMonths : true">
                                                     <span [ngClass]="{'p-highlight':isSelected(date), 'p-disabled': !date.selectable}"
                                                           (click)="onDateSelect($event,date)" draggable="false" (keydown)="onDateCellKeydown($event,date,i)" pRipple>
@@ -118,8 +120,9 @@
                         </button>
                     </div>
                 </div>
-                <div class="p-datepicker-buttonbar" *ngIf="showButtonBar">
+                <div class="p-datepicker-buttonbar" *ngIf="showButtonBar && !timeOnly">
                     <button type="button" [label]="locale.today" (keydown)="onContainerButtonKeydown($event)" (click)="onTodayButtonClick($event)" pButton pRipple [ngClass]="[todayButtonStyleClass]"></button>
+                    <button type="button" [label]="locale.lan" (keydown)="onContainerButtonKeydown($event)" (click)="onChangeLocaleButtonClick($event)" pButton pRipple [ngClass]="[changeLocaleButtonStyleClass]"></button>
                     <button type="button" [label]="locale.clear" (keydown)="onContainerButtonKeydown($event)" (click)="onClearButtonClick($event)" pButton pRipple [ngClass]="[clearButtonStyleClass]"></button>
                 </div>
                 <ng-content select="p-footer"></ng-content>
